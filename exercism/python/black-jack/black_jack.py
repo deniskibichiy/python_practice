@@ -18,13 +18,12 @@ def value_of_card(card):
         2.  'A' (ace card) = 1
         3.  '2' - '10' = numerical value.
     """
-    if card in ("J", "K", "Q"):
+    set_of_ten = {"J", "K", "Q"}
+    if card in set_of_ten:
         return 10
     if card == "A":
         return 1
-    card = int(card)
-    if 1 < card <= 10:
-        return card
+    return int(card)
 
 def higher_card(card_one, card_two):
     """Determine which card has a higher value in the hand.
@@ -61,7 +60,19 @@ def value_of_ace(card_one, card_two):
     Returns:
         int: Either 1 or 11, which is the value of the upcoming ace card.
     """
-    if value_of_card()
+    # RETURN ONE IF:
+        #VALUE OF CARD_ONE + CARD_TWO + 11 > 21
+        #oBTAIN VALUE OF CARD_ONE AND CARD_TWO
+    card_one_value = value_of_card(card_one)
+    card_two_value = value_of_card(card_two)
+    if card_one == "A" or card_two == "A":
+        return 1
+    if card_one_value == 1:
+        card_one_value = 11
+    if card_one_value + card_two_value + 11 > 21:
+        return 1
+    # RETURN 11 IF VALUE OF CARD_ONE + CARD_TWO + 11 < 21
+    return 11
 
 
 def is_blackjack(card_one, card_two):
@@ -78,8 +89,12 @@ def is_blackjack(card_one, card_two):
     Returns:
         bool: Is the hand is a blackjack (two cards worth 21).
     """
-
-    pass
+    qualifying_cards = ("J", "K", "Q", "10")
+    if card_one in qualifying_cards and value_of_card(card_two) == 1:
+        return True
+    if card_two in qualifying_cards and value_of_card(card_one) == 1:
+        return True
+    return False
 
 
 def can_split_pairs(card_one, card_two):
@@ -92,8 +107,7 @@ def can_split_pairs(card_one, card_two):
    Returns:
         bool: Can the hand be split into two pairs? (i.e. cards are of the same value).
     """
-
-    pass
+    return value_of_card(card_one) == value_of_card(card_two)
 
 
 def can_double_down(card_one, card_two):
@@ -106,5 +120,8 @@ def can_double_down(card_one, card_two):
     Returns:
         bool: Can the hand can be doubled down? (i.e. totals 9, 10 or 11 points).
     """
-
-    pass
+    set_of_double_downs = {9, 10, 11}
+    value_of_card_one = value_of_card(card_one)
+    value_of_card_two = value_of_card(card_two)
+    result = value_of_card_one + value_of_card_two
+    return result in set_of_double_downs
