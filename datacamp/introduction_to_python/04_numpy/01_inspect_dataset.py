@@ -14,3 +14,13 @@ np_weight = data[:,4]
 np_age = data[:,5]
 print(np_age)
 
+#Exercise 1
+#Dataset dimensions:
+print(f"The number of dimensions is: {data.ndim}")
+#Number of rows and columns
+print(f"The number of rows and columns is: {data.shape}")
+#Number of dimensions:
+print(f"The total dimensions in the array is: {data.shape}")
+#Total number of values:
+print(f"The total number of values in the array is {data.size}")
+

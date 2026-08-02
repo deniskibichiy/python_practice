@@ -625,3 +625,13 @@ How do I combine these operations to analyze the data?
 
 Do not move to pandas until these operations feel natural in NumPy.
 
+import numpy as np
+
+np_baseball = np.array(baseball)
+
+# Print out addition of np_baseball and updated
+print(updated + np_baseball)
+# Create numpy array: conversion
+conversion = np.array([0.0254, 0.453592, 1])
+# Print out product of np_baseball and conversion
+print(conversion * np_baseball)
