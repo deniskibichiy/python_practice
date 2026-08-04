@@ -151,3 +151,196 @@ Output:
 [(1, 'a'), (2, 'b'), (3, 'c')]
 [] # produces an empty list because the iterator has alreadby been consumed
 ```
+# Unpacking Iterables Using `*`
+
+The unpacking operator (`*`) expands the contents of an iterable into individual elements. This is particularly useful when working with iterators such as those returned by `zip()`.
+
+### Example
+
+```python
+z = zip([1, 2, 3], ['a', 'b', 'c'])
+```
+
+Since `zip()` returns an iterator, it does not immediately produce all values. To unpack the iterator into separate tuples:
+
+```python
+z1, z2, z3 = z
+
+print(z1)  # (1, 'a')
+print(z2)  # (2, 'b')
+print(z3)  # (3, 'c')
+```
+
+Alternatively, use the unpacking operator to convert the iterator into a tuple containing all of its elements:
+
+```python
+z = zip([1, 2, 3], ['a', 'b', 'c'])
+
+pairs = (*z,)
+
+print(pairs)
+# ((1, 'a'), (2, 'b'), (3, 'c'))
+```
+
+> **Note:** Iterators are exhausted after they have been traversed once. Attempting to iterate over `z` again after unpacking will produce no values.
+
+---
+
+# 03-08-2026: Using Iterators to Process Large Datasets
+
+## Why use iterators?
+
+Large datasets may not fit entirely into a computer's memory. Loading an entire CSV file can consume a significant amount of RAM and may even cause the program to crash.
+
+Instead of loading the whole dataset at once, an iterator allows the data to be processed **one chunk at a time**.
+
+The general workflow is:
+
+1. Load a small chunk of data into memory.
+2. Process the chunk.
+3. Store or aggregate the results.
+4. Discard the processed chunk.
+5. Load the next chunk.
+
+Since only a small portion of the dataset is held in memory at any given time, this approach is memory-efficient and scales well to very large files.
+
+---
+
+## Reading a CSV File in Chunks
+
+Pandas' `read_csv()` function accepts a `chunksize` argument. When provided, it returns an iterator that yields DataFrames instead of loading the entire file.
+
+```python
+import pandas as pd
+
+# Store intermediate results
+result = []
+
+# read_csv() now returns an iterator
+for chunk in pd.read_csv("data.csv", chunksize=1000):
+
+    # Each chunk is a DataFrame containing 1000 rows
+    result.append(chunk["x"].sum())
+
+# Compute the final total
+total = sum(result)
+
+print(total)
+```
+
+### How it works
+
+* `chunksize=1000` loads 1000 rows at a time.
+* Each `chunk` is a pandas DataFrame.
+* The sum of column `x` is calculated for each chunk.
+* Each partial result is stored in a list.
+* After all chunks have been processed, the partial sums are combined to produce the final result.
+
+---
+
+## Example: Counting Language Occurrences in a Large Twitter Dataset
+
+The following example counts the frequency of each language in a Twitter dataset while reading only **10 rows at a time**.
+
+```python
+import pandas as pd
+
+# Initialize an empty dictionary
+counts_dict = {}
+
+# Process the CSV in chunks
+for chunk in pd.read_csv("tweets.csv", chunksize=10):
+
+    # Iterate over the selected column
+    for entry in chunk["lang"]:
+
+        if entry in counts_dict:
+            counts_dict[entry] += 1
+        else:
+            counts_dict[entry] = 1
+
+print(counts_dict)
+```
+
+### Algorithm
+
+For every chunk:
+
+1. Read 10 rows.
+2. Iterate through the `lang` column.
+3. If the language already exists in the dictionary, increment its count.
+4. Otherwise, create a new key with a count of 1.
+5. Continue until every chunk has been processed.
+
+---
+
+## Reusable Solution Using a Function
+
+The previous approach can be generalized into a reusable function that works with any CSV file, chunk size, and column.
+
+```python
+import pandas as pd
+
+def count_entries(csv_file, c_size, colname):
+    """
+    Count occurrences of unique values in a column of a CSV file.
+
+    Parameters
+    ----------
+    csv_file : str
+        Path to the CSV file.
+    c_size : int
+        Number of rows to load per chunk.
+    colname : str
+        Column whose values should be counted.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping each unique value to its frequency.
+    """
+
+    counts_dict = {}
+
+    for chunk in pd.read_csv(csv_file, chunksize=c_size):
+
+        for entry in chunk[colname]:
+
+            if entry in counts_dict:
+                counts_dict[entry] += 1
+            else:
+                counts_dict[entry] = 1
+
+    return counts_dict
+
+
+# Count language occurrences
+result_counts = count_entries(
+    "tweets.csv",
+    c_size=10,
+    colname="lang"
+)
+
+print(result_counts)
+```
+
+---
+
+## Advantages of Chunk Processing
+
+* Processes datasets larger than available RAM.
+* Reduces memory consumption.
+* Suitable for streaming and ETL pipelines.
+* Makes it possible to process millions of records on ordinary hardware.
+* Integrates naturally with pandas through the `chunksize` parameter.
+
+---
+
+## Key Takeaways
+
+* `pd.read_csv()` normally loads the entire dataset into memory.
+* Supplying the `chunksize` argument makes `read_csv()` return an iterator.
+* Each iteration yields a DataFrame containing only the specified number of rows.
+* Chunk processing is ideal for large datasets that cannot fit into memory.
+* Dictionaries are commonly used to accumulate statistics across chunks.
+* Wrapping the logic inside a function improves reusability and readability.
