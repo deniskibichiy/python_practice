@@ -25,12 +25,44 @@ class UserProfile:
         else:
             raise ValueError("Role not allowed")
 
+    def from_csv_string(cls,csv_data):
+        user = csv_data.rsplit(", ")
+        return cls(user)
+
     @classmethod
 
     def create_guest(cls, username):
+        username = username
         email = "guest@system.local"
         role = "guest"
         return cls(username, email, role)
     
+if __name__ == "__main__":
+    # 1. Test Standard Instantiation & Validation
+    user1 = UserProfile(username="alice", email="alice@example.com", role="admin")
+    assert user1.username == "alice"
+    assert user1.role == "admin"
 
+    try:
+        invalid_user = UserProfile(username="hacker", email="hacker@site.com", role="superuser")
+        assert False, "Should have raised ValueError for invalid role"
+    except ValueError as e:
+        assert "allowed_roles" in str(e) or "role" in str(e).lower()
+
+    # 2. Test Alternative Constructor: from_csv_string
+    csv_input = "johndoe,john@example.com,member"
+    user2 = UserProfile.from_csv_string(csv_input)
+    assert isinstance(user2, UserProfile)
+    assert user2.username == "johndoe"
+    assert user2.email == "john@example.com"
+    assert user2.role == "member"
+
+    # 3. Test Alternative Constructor: create_guest
+    guest = UserProfile.create_guest(username="visitor123")
+    assert isinstance(guest, UserProfile)
+    assert guest.username == "visitor123"
+    assert guest.email == "guest@system.local"
+    assert guest.role == "guest"
+
+    print("Level 2 Tests Passed Successfully!")
     
